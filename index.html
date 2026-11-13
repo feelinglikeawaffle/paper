@@ -75,7 +75,7 @@ function log(t){logs.unshift(t);logs=logs.slice(0,5);$('log').innerHTML=logs.map
 function toast(t){$('toast').textContent=t;$('toast').classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('toast').classList.remove('show'),1100)}
 function spawn(n=1){for(let i=0;i<n;i++){const x=rand(W*.16,W*.84),y=rand(105,H*.55),size=rand(35,55),stack=paper;papers.push({x,y,size,health:Math.max(1,2+Math.floor(stack/18)),max:Math.max(1,2+Math.floor(stack/18)),angle:rand(-.22,.22),seed:Math.random()});paper++}updateUI()}
 function getRadius(){return 55+radiusLevel*28}
-function getDamage(){return 1+damageLevel*2}
+function getDamage(){return 1+clickLevel+damageLevel*2}
 function clickPower(x,y){if(clickTimer>0)return;clickTimer=Math.max(.08,.7-coolLevel*.09);const radius=getRadius(),damage=getDamage();let hit=0;
  for(const p of papers){const d=Math.hypot(p.x-x,p.y-y);if(d<=radius){p.health-=damage;hit++;for(let i=0;i<3+damageLevel;i++)bits.push({x:p.x+rand(-p.size/2,p.size/2),y:p.y+rand(-p.size/2,p.size/2),vx:rand(-90,90),vy:rand(-140,-20),life:.5,size:rand(2,5)})}}
  let destroyed=0;papers=papers.filter(p=>{if(p.health<=0){destroyed++;return false}return true});
