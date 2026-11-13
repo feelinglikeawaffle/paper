@@ -88,7 +88,7 @@ function resize(){const r=canvas.getBoundingClientRect();dpr=Math.min(devicePixe
 new ResizeObserver(resize).observe(canvas);resize();
 function log(t){logs.unshift(t);logs=logs.slice(0,5);$('log').innerHTML=logs.map(x=>'<div>'+x+'</div>').join('')}
 function toast(t){$('toast').textContent=t;$('toast').classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('toast').classList.remove('show'),1100)}
-function interval(){return Math.max(.12,2.8*Math.pow(.91,printerLevel)/bonuses.printer)}
+function interval(){return 2.8/(1+printerLevel*.16)/bonuses.printer}
 function outputCount(mult){const whole=Math.floor(mult);paperRemainder+=mult-whole;let count=whole;if(paperRemainder>=1){count++;paperRemainder-=1}return Math.max(1,count)}
 function feedPrinter(){if(printCooldown>0){toast('PRINTER RECHARGING');return}spawn(outputCount((1+paperOutputLevel)*bonuses.paper));printCooldown=interval();feedFlash=.5;updateUI();toast('ONE SHEET FED')}
 function printerWidth(){return Math.min(220,W*(W<600?.62:.34))}
@@ -96,7 +96,7 @@ function tapPrinterAt(x,y){const count=printerCount+prestigePrinter,w=printerWid
 function spawn(n=1,source=0){for(let i=0;i<n;i++){const x=W*.5+rand(-20,20),size=rand(42,52),health=2+Math.floor(paperCount/85);const layer=0,targetX=rand(size*.65,W-size*.65),targetY=rand(H*.28,H*.79);papers.push({x,y:77,vx:rand(-12,12),vy:rand(15,35),targetX,targetY,size,health,max:health,angle:rand(-.16,.16),spin:rand(-.35,.35),falling:true,layer,seed:Math.random()});paperCount++}updateUI()}
 function radius(){return 40+radiusLevel*24+(prestigePrinter>1?(prestigePrinter-1)*8:0)+(bonuses.radius||0)}
 function damage(){return 1+clickStrengthLevel+bonuses.damage}
-function impactInterval(){return Math.max(.12,2.3*Math.pow(.88,coolLevel))}
+function impactInterval(){return 2.3/(1+coolLevel*.18)}
 function impactAt(x,y){clickTimer=impactInterval();impact={x,y,r:0,life:.22};let hit=0,destroyed=0;const chainTargets=[];for(const p of papers){if(Math.hypot(p.x-x,p.y-y)<=radius()){const critical=Math.random()<bonuses.crit;p.health-=damage()*(critical?3:1);hit++;chainTargets.push(p);for(let i=0;i<3+damageLevel;i++)bits.push({x:p.x+rand(-p.size/2,p.size/2),y:p.y+rand(-p.size/2,p.size/2),vx:rand(-105,105),vy:rand(-150,-25),life:rand(.35,.7),size:rand(2,5)})}}
 if(bonuses.chain>0){let jumps=bonuses.chain,front=chainTargets.slice();while(jumps>0&&front.length){const next=[];for(const source of front){let target=null,best=130;for(const candidate of papers){if(candidate.health<=0||chainTargets.includes(candidate)||next.includes(candidate))continue;const d=Math.hypot(candidate.x-source.x,candidate.y-source.y);if(d<best){best=d;target=candidate}}if(target){target.health-=damage();chainTargets.push(target);next.push(target);jumps--;bits.push({x:target.x,y:target.y,vx:rand(-40,40),vy:-50,life:.5,size:5})}}front=next}}
 papers=papers.filter(p=>{if(p.health<=0){destroyed++;if(bonuses.explosive){for(const other of papers){if(other!==p&&Math.hypot(other.x-p.x,other.y-p.y)<55+bonuses.explosive*30)other.health-=Math.max(1,Math.floor(bonuses.explosive*2))}for(let k=0;k<10;k++)bits.push({x:p.x,y:p.y,vx:rand(-150,150),vy:rand(-160,60),life:.65,size:rand(3,7)})}return false}return true});
