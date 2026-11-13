@@ -43,14 +43,14 @@ button:hover{filter:brightness(1.18)}button:active{transform:translateY(2px);box
 <main class="main">
  <section class="office">
   <canvas id="game" aria-label="Click paper stacks to damage and destroy them."></canvas>
-  <div class="hudhint">CLICK THE PAPER · DAMAGE EVERYTHING IN RANGE</div>
-  <div class="clutter">PAPER IN SYSTEM <span id="clutterText">0 sheets</span><div class="bar"><i id="clutterBar"></i></div></div>
+  <div class="hudhint">CLICK PAPER · DAMAGE EVERYTHING IN THE RADIUS</div>
+  <div class="clutter">PAPER PRODUCTION <span id="clutterText">0 sheets</span><div class="bar"><i id="clutterBar"></i></div></div>
   <div class="toast" id="toast"></div>
  </section>
  <aside class="side">
   <section class="card"><h2>CONTINUOUS PRINTER <span id="printerCount">AUTO</span></h2><div class="printergrid">
-   <button class="printerbtn" id="print"><b>▤ PRINT PAPER</b><span>Manual extra paper burst</span></button>
-   <button class="printerbtn" id="auto"><b>◷ AUTO-PRINT</b><span id="autoLabel">Always active</span></button>
+   <button class="printerbtn" id="print"><b>▤ MANUAL FEED</b><span>Force three sheets out now</span></button>
+   <button class="printerbtn" id="auto"><b>◷ AUTO FEED</b><span id="autoLabel">Always active</span></button>
   </div></section>
   <section class="card"><h2>CLICK + PRINTER UPGRADES</h2>
    <button class="upgrade" id="click"><span><b>Click Impact</b><small id="clickDesc">Improves click strength</small></span><span class="cost" id="clickCost">$20</span></button>
@@ -63,42 +63,42 @@ button:hover{filter:brightness(1.18)}button:active{transform:translateY(2px);box
 </main>
 <footer class="footer"><span>OMNICORP™ · YOUR COMPLIANCE IS OUR CULTURE</span><span>BUILD 0.1.0 // DESK OPERATIONS</span></footer>
 </div>
-<script>(()=> {
+<script>(()=>{
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d'),$=id=>document.getElementById(id);
-let W=900,H=560,dpr=1,last=0,cash=0,xp=0,shredded=0,paper=0,autoPrinter=true,printerLevel=0,clickLevel=0,radiusLevel=0,damageLevel=0,coolLevel=0,clickTimer=0,printerTimer=0,papers=[],bits=[],logs=[];
+let W=900,H=560,dpr=1,last=0,clock=0,cash=0,xp=0,shredded=0,paperCount=0,printerLevel=0,clickLevel=0,radiusLevel=0,damageLevel=0,coolLevel=0,clickTimer=0,printerTimer=0,papers=[],bits=[],logs=[],impact=null;
 const rand=(a,b)=>a+Math.random()*(b-a),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const costs={printer:[25,90,300,900,2800,8500,25000],click:[20,75,250,800,2400,7000],radius:[35,120,420,1400,4500,14000],damage:[30,110,380,1250,4000,12000],cool:[45,160,550,1800,5800,18000]};
 const levels={printer:()=>printerLevel,click:()=>clickLevel,radius:()=>radiusLevel,damage:()=>damageLevel,cool:()=>coolLevel};
-function resize(){const r=canvas.getBoundingClientRect();dpr=Math.min(devicePixelRatio||1,2);W=r.width;H=r.height;canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0)}
+const labels={printer:'Faster automatic paper feed',click:'Adds impact strength per click',radius:'Damages paper across a wider area',damage:'More damage dealt to each sheet',cool:'Shortens the delay between clicks'};
+const printers=[{x:.25,phase:0},{x:.5,phase:1.8},{x:.75,phase:3.4}];
+let grain=null;
+function resize(){const r=canvas.getBoundingClientRect();dpr=Math.min(devicePixelRatio||1,2);W=r.width;H=r.height;canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);makeGrain()}
+function makeGrain(){grain=document.createElement('canvas');grain.width=180;grain.height=180;const g=grain.getContext('2d'),im=g.createImageData(180,180);for(let i=0;i<im.data.length;i+=4){const n=Math.random()*42;im.data[i]=n+90;im.data[i+1]=n+75;im.data[i+2]=n+48;im.data[i+3]=Math.random()*34}g.putImageData(im,0,0)}
 new ResizeObserver(resize).observe(canvas);resize();
 function log(t){logs.unshift(t);logs=logs.slice(0,5);$('log').innerHTML=logs.map(x=>'<div>'+x+'</div>').join('')}
 function toast(t){$('toast').textContent=t;$('toast').classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('toast').classList.remove('show'),1100)}
-function spawn(n=1){for(let i=0;i<n;i++){const x=rand(W*.16,W*.84),y=rand(105,H*.55),size=rand(35,55),stack=paper;papers.push({x,y,size,health:Math.max(1,2+Math.floor(stack/18)),max:Math.max(1,2+Math.floor(stack/18)),angle:rand(-.22,.22),seed:Math.random()});paper++}updateUI()}
-function getRadius(){return 55+radiusLevel*28}
-function getDamage(){return 1+clickLevel+damageLevel*2}
-function clickPower(x,y){if(clickTimer>0)return;clickTimer=Math.max(.08,.7-coolLevel*.09);const radius=getRadius(),damage=getDamage();let hit=0;
- for(const p of papers){const d=Math.hypot(p.x-x,p.y-y);if(d<=radius){p.health-=damage;hit++;for(let i=0;i<3+damageLevel;i++)bits.push({x:p.x+rand(-p.size/2,p.size/2),y:p.y+rand(-p.size/2,p.size/2),vx:rand(-90,90),vy:rand(-140,-20),life:.5,size:rand(2,5)})}}
- let destroyed=0;papers=papers.filter(p=>{if(p.health<=0){destroyed++;return false}return true});
- if(destroyed){const earned=destroyed*(1+Math.floor(paper/100));cash+=earned;xp+=destroyed*2;shredded+=destroyed;log('<em>+'+earned+' credits</em> · '+destroyed+' paper stack(s) shredded')}
- if(hit===0)toast('NO PAPER IN CLICK RADIUS');else if(destroyed)toast('PAPER DESTROYED ×'+destroyed);updateUI()}
+function interval(){return Math.max(.85,5.5-printerLevel*.58)}
+function spawn(n=1,source=null){for(let i=0;i<n;i++){const pr=source===null?printers[Math.floor(Math.random()*printers.length)]:printers[source%printers.length],x=W*pr.x+rand(-16,16),size=rand(34,43),health=2+Math.floor(paperCount/85);papers.push({x,y:78,vx:rand(-12,12),vy:rand(15,35),targetX:clamp(x+rand(-85,85),size,W-size),targetY:rand(H*.35,H*.69),size,health,max:health,angle:rand(-.16,.16),spin:rand(-.35,.35),falling:true,layer:paperCount%4,seed:Math.random()});paperCount++}updateUI()}
+function radius(){return 52+radiusLevel*26}
+function damage(){return 1+clickLevel+damageLevel*2}
+function impactAt(x,y){if(clickTimer>0)return;clickTimer=Math.max(.075,.62-coolLevel*.085);impact={x,y,r:0,life:.22};let hit=0,destroyed=0;for(const p of papers){if(Math.hypot(p.x-x,p.y-y)<=radius()){p.health-=damage();hit++;for(let i=0;i<3+damageLevel;i++)bits.push({x:p.x+rand(-p.size/2,p.size/2),y:p.y+rand(-p.size/2,p.size/2),vx:rand(-105,105),vy:rand(-150,-25),life:rand(.35,.7),size:rand(2,5)})}}
+papers=papers.filter(p=>{if(p.health<=0){destroyed++;return false}return true});
+if(destroyed){const reward=destroyed*(1+Math.floor(paperCount/125));cash+=reward;xp+=destroyed*2;shredded+=destroyed;log('<em>+'+reward+' credits</em> · '+destroyed+' sheet(s) obliterated')}
+if(!hit)toast('NO PAPER IN IMPACT ZONE');else if(destroyed)toast('PAPER OBLITERATED ×'+destroyed);updateUI()}
 function buy(key){const lvl=levels[key](),arr=costs[key],cost=arr[Math.min(lvl,arr.length-1)];if(lvl>=arr.length||cash<cost)return;cash-=cost;if(key==='printer')printerLevel++;if(key==='click')clickLevel++;if(key==='radius')radiusLevel++;if(key==='damage')damageLevel++;if(key==='cool')coolLevel++;log(key.toUpperCase()+' SYSTEM UPGRADED');toast('UPGRADE INSTALLED');updateUI()}
-const labels={printer:['Printer speed','Reduces auto-print cooldown'],click:['Click strength','Adds paper damage per click'],radius:['Click radius','Hits a larger area around each click'],damage:['Impact force','Increases damage dealt to paper'],cool:['Click cooldown','Lets you click more often']};
-function updateUI(){$('cash').textContent='
-</body>
-</html>+Math.floor(cash).toLocaleString();$('xp').textContent=Math.floor(xp).toLocaleString();$('shredded').textContent=shredded.toLocaleString();$('printerCount').textContent='AUTO · LV '+printerLevel;$('clutterText').textContent=paper.toLocaleString()+' sheets';$('clutterBar').style.width='100%';$('autoLabel').textContent='AUTO-PRINT ACTIVE · '+(Math.max(1.2,6-printerLevel*.65)).toFixed(1)+'s';$('manifest').innerHTML='<div><em>'+paper.toLocaleString()+'</em> sheets printed · '+papers.length.toLocaleString()+' active stacks</div><div>Click damage: '+getDamage()+'</div><div>Click radius: '+Math.round(getRadius())+'px</div>';
- for(const key of Object.keys(costs)){const lvl=levels[key](),arr=costs[key],cost=arr[Math.min(lvl,arr.length-1)];$(key+'Cost').textContent=lvl>=arr.length?'MAX':'
-</body>
-</html>+cost.toLocaleString();$(key+'Desc').textContent=labels[key][1]+' · Lv '+lvl;$(key).disabled=lvl>=arr.length||cash<cost}
-}
-function drawDesk(){ctx.fillStyle='#927b59';ctx.fillRect(0,0,W,H);for(let y=0;y<H;y+=54){ctx.fillStyle=y%108?'#9a835f':'#8e7654';ctx.fillRect(0,y,W,52);ctx.strokeStyle='#6f5c43';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,y+52);ctx.lineTo(W,y+52);ctx.stroke();for(let j=0;j<5;j++){const x=((j*173+y*7)%Math.max(1,W));ctx.strokeStyle='#a58e69';ctx.beginPath();ctx.moveTo(x,y+12+j*7);ctx.lineTo(x+38,y+14+j*7);ctx.stroke()}}}
-function drawPrinter(){const x=W*.19,y=13,w=W*.62,h=77;ctx.fillStyle='#1c211c';ctx.fillRect(x+5,y+6,w,h);ctx.fillStyle='#4b5549';ctx.fillRect(x,y,w,h);ctx.fillStyle='#747e6b';ctx.fillRect(x+6,y+5,w-12,16);ctx.fillStyle='#242a24';ctx.fillRect(x+12,y+28,w-24,39);ctx.fillStyle='#87927a';ctx.fillRect(x+20,y+34,w-40,8);ctx.fillStyle='#c4c9ad';ctx.fillRect(x+27,y+52,w-54,3);ctx.fillStyle='#bd6c50';ctx.fillRect(x+w-27,y+34,8,8);ctx.fillStyle='#aab79a';ctx.font='bold 9px monospace';ctx.fillText('OMNICORP // CONTINUOUS PAPER FEED',x+17,y+20)}
-function drawShredder(){const y=H-75;ctx.fillStyle='#171b17';ctx.fillRect(W*.07,y+10,W*.86,68);ctx.fillStyle='#333c33';ctx.fillRect(W*.07,y,W*.86,65);ctx.fillStyle='#171b17';ctx.fillRect(W*.12,y+12,W*.76,25);ctx.fillStyle='#87927b';for(let i=0;i<Math.floor(W/8);i++)ctx.fillRect(W*.13+i*W*.74/Math.floor(W/8),y+16,2,17);ctx.fillStyle='#c7b98e';ctx.font='bold 10px monospace';ctx.textAlign='center';ctx.fillText('INDUSTRIAL SHREDDER // IMPACT ZONE',W/2,y+52);ctx.textAlign='left'}
-function drawPaper(p){ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.angle);ctx.shadowColor='#211a10aa';ctx.shadowBlur=8;ctx.shadowOffsetX=3;ctx.shadowOffsetY=4;ctx.fillStyle='#e8dfc9';ctx.fillRect(-p.size/2,-p.size*.66,p.size,p.size*1.32);ctx.shadowColor='transparent';ctx.strokeStyle='#8b816b';ctx.strokeRect(-p.size/2,-p.size*.66,p.size,p.size*1.32);ctx.fillStyle='#55594c';ctx.font='bold 7px monospace';ctx.fillText('OMNICORP',-p.size/2+5,-p.size*.35);for(let i=0;i<4;i++)ctx.fillRect(-p.size/2+5,-p.size*.2+i*7,p.size*(.45+(i%2)*.25),1.5);ctx.fillStyle='#9e4638';ctx.fillRect(-p.size/2+5,p.size*.35,p.size-10,3);ctx.restore();const pct=p.health/p.max;ctx.fillStyle='#302c24';ctx.fillRect(p.x-p.size/2,p.y+p.size*.72,p.size,3);ctx.fillStyle='#c46d54';ctx.fillRect(p.x-p.size/2,p.y+p.size*.72,p.size*pct,3)}
-function frame(ts){const dt=Math.min(.04,(ts-last)/1000||0);last=ts;clickTimer=Math.max(0,clickTimer-dt);printerTimer+=dt;const interval=Math.max(1.2,6-printerLevel*.65);if(printerTimer>=interval){printerTimer-=interval;spawn(1+Math.floor(printerLevel/3))}
- ctx.clearRect(0,0,W,H);drawDesk();drawPrinter();papers.forEach(drawPaper);drawShredder();for(const b of bits){b.life-=dt;b.x+=b.vx*dt;b.y+=b.vy*dt;b.vy+=250*dt;ctx.globalAlpha=clamp(b.life*2,0,1);ctx.fillStyle='#e8dfc9';ctx.fillRect(b.x,b.y,b.size,b.size)}bits=bits.filter(b=>b.life>0);ctx.globalAlpha=1;requestAnimationFrame(frame)}
-canvas.addEventListener('pointerdown',e=>{const r=canvas.getBoundingClientRect();clickPower(e.clientX-r.left,e.clientY-r.top)});
-$('print').addEventListener('click',()=>spawn(1));['printer','click','radius','damage','cool'].forEach(id=>$(id).addEventListener('click',()=>buy(id)));
-requestAnimationFrame(frame);spawn(7);updateUI();
+function updateUI(){$('cash').textContent='$'+Math.floor(cash).toLocaleString();$('xp').textContent=Math.floor(xp).toLocaleString();$('shredded').textContent=shredded.toLocaleString();$('printerCount').textContent='3 UNITS · LV '+printerLevel;$('clutterText').textContent=paperCount.toLocaleString()+' sheets';$('clutterBar').style.width='100%';$('autoLabel').textContent='AUTO FEED · '+interval().toFixed(1)+'s';$('manifest').innerHTML='<div><em>'+paperCount.toLocaleString()+'</em> sheets printed · '+papers.length.toLocaleString()+' on table</div><div>Impact damage: '+damage()+'</div><div>Impact radius: '+Math.round(radius())+'px</div>';
+for(const key of Object.keys(costs)){const lvl=levels[key](),arr=costs[key],cost=arr[Math.min(lvl,arr.length-1)];$(key+'Cost').textContent=lvl>=arr.length?'MAX':'$'+cost.toLocaleString();$(key+'Desc').textContent=labels[key]+' · Lv '+lvl;$(key).disabled=lvl>=arr.length||cash<cost}}
+function rect(x,y,w,h,color){ctx.fillStyle=color;ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h))}
+function drawDesk(){rect(0,0,W,H,'#70583e');for(let y=0;y<H;y+=44){rect(0,y,W,42,y%88?'#8b704e':'#806545');rect(0,y+41,W,3,'#58452f');for(let j=0;j<9;j++){const x=(j*137+y*11)%W;rect(x,y+7+(j%4)*8,rand(12,35),1,'#a1855c')}}ctx.globalAlpha=.16;ctx.fillStyle=ctx.createPattern(grain,'repeat');ctx.fillRect(0,0,W,H);ctx.globalAlpha=1;const shade=ctx.createRadialGradient(W/2,H*.48,20,W/2,H*.48,Math.max(W,H)*.75);shade.addColorStop(0,'#00000000');shade.addColorStop(1,'#100d09aa');ctx.fillStyle=shade;ctx.fillRect(0,0,W,H)}
+function drawPrinter(p,i){const x=W*p.x,w=Math.min(190,W*.23),y=17,h=72,pulse=Math.sin(clock*7+p.phase),feed=Math.max(0,pulse)*2;ctx.save();ctx.translate(x,y);ctx.fillStyle='#211d18';ctx.fillRect(-w/2+7,9,w,h);ctx.fillStyle='#333a34';ctx.fillRect(-w/2,3,w,h);ctx.fillStyle='#626d61';ctx.fillRect(-w/2+4,0,w-8,10);ctx.fillStyle='#252c27';ctx.fillRect(-w/2+10,16,w-20,37);ctx.fillStyle='#4b574c';ctx.fillRect(-w/2+15,21,w-30,24);ctx.fillStyle='#151a17';ctx.fillRect(-w/2+21,26,w-42,9);ctx.fillStyle='#a5b18a';ctx.fillRect(-w/2+12,55,w-24,5);ctx.fillStyle='#d0c6a7';ctx.fillRect(-w/2+18,60+feed,w-36,14);ctx.fillStyle='#c5cdb0';ctx.font='bold 8px monospace';ctx.textAlign='center';ctx.fillText('OMNI-'+(i+1),0,14);ctx.fillStyle=i===0?'#c66a52':'#a8bd79';ctx.fillRect(w/2-17,20,6,6);ctx.fillStyle='#1a201b';ctx.fillRect(-w/2+8,74,w-16,5);ctx.restore();ctx.textAlign='left'}
+function drawPaper(p){ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.angle);const s=p.size,off=p.layer*2;ctx.shadowColor='#1b140c99';ctx.shadowBlur=7;ctx.shadowOffsetX=3;ctx.shadowOffsetY=5;ctx.fillStyle='#e9e0cc';ctx.fillRect(-s/2+off,-s*.66+off,s,s*1.32);ctx.shadowColor='transparent';ctx.strokeStyle='#8b806a';ctx.lineWidth=1;ctx.strokeRect(-s/2+off,-s*.66+off,s,s*1.32);ctx.fillStyle='#777261';ctx.fillRect(-s/2+5,-s*.35,s*.48,2);for(let j=0;j<4;j++)ctx.fillRect(-s/2+5,-s*.16+j*6,s*(.38+(j%2)*.27),1);ctx.fillStyle='#9c4b3d';ctx.fillRect(-s/2+5,s*.38,s-10,3);ctx.restore();if(p.health<p.max){ctx.fillStyle='#302c24';ctx.fillRect(p.x-s/2,p.y+s*.72,s,3);ctx.fillStyle='#c46d54';ctx.fillRect(p.x-s/2,p.y+s*.72,s*clamp(p.health/p.max,0,1),3)}}
+function drawGrainOverlay(){ctx.globalAlpha=.2;ctx.fillStyle=ctx.createPattern(grain,'repeat');ctx.fillRect(0,0,W,H);ctx.globalAlpha=1}
+function frame(ts){const dt=Math.min(.04,(ts-last)/1000||0);last=ts;clock+=dt;clickTimer=Math.max(0,clickTimer-dt);printerTimer+=dt;if(printerTimer>=interval()){printerTimer-=interval();spawn(1+Math.floor(printerLevel/3))}
+ctx.clearRect(0,0,W,H);drawDesk();printers.forEach(drawPrinter);for(const p of papers){if(p.falling){p.vy+=360*dt;p.y+=p.vy*dt;p.x+=(p.targetX-p.x)*Math.min(1,dt*2.8);p.angle+=p.spin*dt;if(p.y>=p.targetY){p.y=p.targetY;p.falling=false;p.vy=0;p.angle=rand(-.13,.13)}}}
+papers.forEach(drawPaper);rect(0,H-27,W,27,'#282d27');rect(0,H-30,W,3,'#59604d');for(const b of bits){b.life-=dt;b.x+=b.vx*dt;b.y+=b.vy*dt;b.vy+=280*dt;ctx.globalAlpha=clamp(b.life*2,0,1);rect(b.x,b.y,b.size,b.size,'#e9e0cc')}ctx.globalAlpha=1;if(impact){impact.r+=(radius()-impact.r)*.38;impact.life-=dt;ctx.strokeStyle='#f1d79b';ctx.globalAlpha=clamp(impact.life/.22,0,1);ctx.lineWidth=2;ctx.beginPath();ctx.arc(impact.x,impact.y,impact.r,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;if(impact.life<=0)impact=null}bits=bits.filter(b=>b.life>0);drawGrainOverlay();requestAnimationFrame(frame)}
+canvas.addEventListener('pointerdown',e=>{const r=canvas.getBoundingClientRect();impactAt(e.clientX-r.left,e.clientY-r.top)});
+$('print').addEventListener('click',()=>{spawn(3);toast('MANUAL FEED CYCLE')});$('auto').addEventListener('click',()=>toast('AUTOMATIC FEED ONLINE'));['printer','click','radius','damage','cool'].forEach(id=>$(id).addEventListener('click',()=>buy(id)));
+requestAnimationFrame(frame);spawn(9);updateUI();
 })();</script>
 </body>
 </html>
