@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#171817">
+<title>SHREDCO — OmniCorp Redaction Division</title>
+<style>
+:root{--bg:#171917;--panel:#242824;--panel2:#303630;--line:#4b554a;--paper:#e8dfc9;--ink:#252820;--muted:#a4aa9b;--green:#a8c27b;--gold:#e2b96e;--red:#c56b5c}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:#e9e8dc;font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+body{background:radial-gradient(ellipse at 50% 25%,#333a31 0,#20251f 50%,#111411 100%)}
+#app{height:100dvh;display:flex;flex-direction:column;max-width:1600px;margin:auto;padding:10px;gap:9px}
+.topbar{height:62px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:8px 15px;background:linear-gradient(180deg,#333a32,#252b25);border:2px solid #596153;box-shadow:0 4px 0 #10130f, inset 0 1px #77806e; border-radius:5px}
+.brand{display:flex;align-items:center;gap:12px}.logo{width:38px;height:38px;background:#b4c58a;color:#20251d;display:grid;place-items:center;font-weight:1000;font-size:20px;box-shadow:3px 3px 0 #10130f;transform:rotate(-2deg)}h1{font-size:20px;letter-spacing:3px;margin:0;color:#e9e6d6}h1 span{color:var(--green)}.sub{font-size:9px;letter-spacing:2px;color:#aeb5a5;margin-top:3px}.stats{display:flex;gap:22px}.stat{min-width:90px}.stat small{display:block;font-size:9px;color:#9da594;letter-spacing:1px}.stat strong{font-size:18px;color:#f0e8d3;font-weight:800}.stat.money strong{color:var(--gold)}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:9px;flex:1;min-height:0}
+.office{position:relative;min-height:0;border:3px solid #4c5549;border-radius:5px;overflow:hidden;background:#8b7658;box-shadow:inset 0 0 0 3px #b49a70,0 5px 0 #10130f}
+#game{width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+#game:active{cursor:grabbing}
+.hudhint{position:absolute;left:13px;top:11px;padding:7px 9px;background:#171b17d9;border:1px solid #626d5b;color:#c7cdbb;font-size:10px;pointer-events:none}
+.clutter{position:absolute;right:12px;top:11px;width:150px;background:#171b17d9;border:1px solid #626d5b;padding:7px 9px;font-size:9px;color:#b8c0ae;pointer-events:none}.bar{height:5px;background:#41483d;margin-top:5px}.bar i{display:block;height:100%;background:#b5bd80;width:0%}
+.side{display:flex;flex-direction:column;gap:9px;min-height:0;overflow:auto;scrollbar-width:thin;scrollbar-color:#69715e #20251f}
+.card{background:linear-gradient(180deg,#30372f,#252b25);border:2px solid #50594c;box-shadow:0 4px 0 #10130f,inset 0 1px #687260;border-radius:4px;padding:12px}
+.card h2{margin:0 0 10px;font-size:11px;letter-spacing:2px;color:#c3ceaa;text-transform:uppercase;display:flex;justify-content:space-between}
+.printergrid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+button{font:inherit;color:#e8e8d9;cursor:pointer;border:1px solid #626e58;background:linear-gradient(#46513f,#333d30);box-shadow:0 3px 0 #151a14;padding:9px 8px;border-radius:3px;transition:filter .12s,transform .12s;touch-action:manipulation}
+button:hover{filter:brightness(1.18)}button:active{transform:translateY(2px);box-shadow:0 1px 0 #151a14}button:disabled{opacity:.38;cursor:not-allowed;filter:grayscale(.7)}
+.printerbtn{font-size:10px;text-align:left;min-height:54px}.printerbtn b{display:block;font-size:11px;color:#e4d9bd;margin-bottom:5px}.printerbtn span{font-size:9px;color:#aab39d}
+.upgrade{width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left;margin:6px 0;padding:10px;font-size:10px;gap:8px}.upgrade b{display:block;color:#e5e3d3;font-size:10px;margin-bottom:4px}.upgrade small{display:block;color:#aab39d;font-size:9px;line-height:1.4}.cost{color:var(--gold);white-space:nowrap;font-weight:bold}
+.tabs{display:flex;gap:5px}.tabs button{flex:1;font-size:9px;padding:7px 3px}.tabs button.active{background:#899b68;color:#1c241a;border-color:#c1d39a}
+.log{font-size:9px;line-height:1.6;color:#b9c0ae;max-height:95px;overflow:hidden}.log div{border-bottom:1px solid #424b40;padding:3px 0}.log em{font-style:normal;color:#d9bd83}
+.footer{height:30px;flex:none;display:flex;align-items:center;justify-content:space-between;color:#7f8979;font-size:9px;padding:0 5px}
+.toast{position:absolute;left:50%;top:48px;transform:translateX(-50%);padding:9px 14px;background:#1d251d;border:2px solid #a4b37c;color:#e6edce;font-size:11px;box-shadow:0 4px 0 #10130f;opacity:0;pointer-events:none;transition:opacity .2s;white-space:nowrap}.toast.show{opacity:1}
+@media(max-width:760px){#app{padding:6px;gap:6px}.topbar{height:55px;padding:6px 9px}.logo{width:31px;height:31px;font-size:16px}h1{font-size:16px}.sub{font-size:7px}.stats{gap:10px}.stat{min-width:55px}.stat small{font-size:8px}.stat strong{font-size:14px}.main{grid-template-columns:1fr;grid-template-rows:minmax(230px,1fr) minmax(175px,35%);gap:6px}.side{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:min-content;overflow:auto;gap:6px}.card{padding:8px}.card h2{font-size:9px;margin-bottom:6px}.printerbtn{min-height:43px;padding:6px}.upgrade{margin:4px 0;padding:7px;font-size:9px}.upgrade small{font-size:8px}.logcard{grid-column:1/-1}.log{max-height:45px}.footer{height:22px;font-size:8px}.hudhint{font-size:8px;top:7px;left:7px}.clutter{top:7px;right:7px;width:115px;font-size:8px}}
+@media(max-width:390px){.stats{gap:6px}.stat{min-width:48px}.stat strong{font-size:12px}.sub{letter-spacing:1px}}
+</style>
+</head>
+<body>
+<div id="app">
+<header class="topbar">
+ <div class="brand"><div class="logo">Ω</div><div><h1>SHRED<span>CO</span></h1><div class="sub">OMNICORP // REDACTION DIVISION</div></div></div>
+ <div class="stats"><div class="stat money"><small>CLEAN-UP CREDITS</small><strong id="cash">$0</strong></div><div class="stat"><small>CONFETTI XP</small><strong id="xp">0</strong></div><div class="stat"><small>FILES SHREDDED</small><strong id="shredded">0</strong></div></div>
+</header>
+<main class="main">
+ <section class="office">
+  <canvas id="game" aria-label="Interactive office desk. Drag paper into the shredder."></canvas>
+  <div class="hudhint">DRAG DOCUMENTS INTO THE SHREDDER ↓</div>
+  <div class="clutter">DESK CLUTTER <span id="clutterText">0%</span><div class="bar"><i id="clutterBar"></i></div></div>
+  <div class="toast" id="toast"></div>
+ </section>
+ <aside class="side">
+  <section class="card"><h2>PRINTER ARRAY <span id="printerCount">01 / 06</span></h2><div class="printergrid">
+   <button class="printerbtn" id="print"><b>▤ ISSUE DOCUMENT</b><span>Click to dispense a file</span></button>
+   <button class="printerbtn" id="auto"><b>◷ AUTO-SPOOLER</b><span id="autoLabel">Locked · $75</span></button>
+  </div></section>
+  <section class="card"><h2>HARDWARE UPGRADES</h2>
+   <button class="upgrade" id="blade"><span><b>Blade Geometry</b><small id="bladeDesc">Strip-cut · 1× document value</small></span><span class="cost" id="bladeCost">$40</span></button>
+   <button class="upgrade" id="motor"><span><b>Motor Torque</b><small id="motorDesc">Improves feed reliability</small></span><span class="cost" id="motorCost">$60</span></button>
+   <button class="upgrade" id="hopper"><span><b>Feed Hopper</b><small id="hopperDesc">Increases desk capacity</small></span><span class="cost" id="hopperCost">$90</span></button>
+  </section>
+  <section class="card"><h2>DOCUMENT MANIFEST</h2><div class="log" id="manifest"><div>Awaiting first document…</div></div></section>
+  <section class="card logcard"><h2>INTERNAL MEMOS <span>LIVE</span></h2><div class="log" id="log"><div>Welcome aboard. Please shred responsibly.</div></div></section>
+ </aside>
+</main>
+<footer class="footer"><span>OMNICORP™ · YOUR COMPLIANCE IS OUR CULTURE</span><span>BUILD 0.1.0 // DESK OPERATIONS</span></footer>
+</div>
+<script>
+(()=>{
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
+const $=id=>document.getElementById(id);
+let W=900,H=560,dpr=1,last=0,spawnClock=0,cash=0,xp=0,shredded=0,auto=false,autoClock=0,blade=0,motor=0,hopper=0,drag=null,papers=[],bits=[],logs=[],manifest=[];
+const tiers=[
+ {name:'Junk Memo',value:1,color:'#eee7d6',ink:'#34372f',chance:0.64,size:0.8},
+ {name:'Expense Report',value:15,color:'#d8c36e',ink:'#4b4228',chance:0.23,size:0.95},
+ {name:'Blueprint',value:120,color:'#6d9db0',ink:'#e1e9df',chance:0.085,size:1.35},
+ {name:'Blacklisted File',value:1500,color:'#b18a5d',ink:'#6d302a',chance:0.023,size:1.15},
+ {name:'classified_void.doc',value:25000,color:'#272632',ink:'#d5a9ff',chance:0.002,size:1.1}
+];
+const upgrades={blade:[40,140,600,3500],motor:[60,220,900,4200],hopper:[90,300,1200,5000]};
+const bladeNames=['Strip-cut','Cross-cut','Micro-cut','Plasma vaporizer'],bladeMult=[1,3,10,100];
+const rand=(a,b)=>a+Math.random()*(b-a),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function resize(){const r=canvas.getBoundingClientRect();dpr=Math.min(devicePixelRatio||1,2);W=r.width;H=r.height;canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0)}
+new ResizeObserver(resize).observe(canvas);resize();
+function addLog(t){logs.unshift(t);logs=logs.slice(0,5);$('log').innerHTML=logs.map(x=>'<div>'+x+'</div>').join('')}
+function toast(t){$('toast').textContent=t;$('toast').classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('toast').classList.remove('show'),1500)}
+function pickTier(){let n=Math.random(),sum=0;for(const t of tiers){sum+=t.chance;if(n<sum)return t}return tiers[0]}
+function spawn(){if(papers.length>=14+hopper*7){addLog('Printer jam: desk clutter limit reached.');toast('DESK OVERLOADED — CLEAR SOME PAPER');return}
+ const t=pickTier(),w=70*t.size,h=94*t.size;
+ papers.push({x:rand(W*.17,W*.78),y:rand(68,130),vx:rand(-35,35),vy:rand(10,55),a:rand(-.3,.3),va:rand(-.7,.7),w,h,t,stapled:t===tiers[1],age:0});
+ $('manifest').innerHTML='<div><em>'+t.name+'</em> · face value $'+t.value.toLocaleString()+'</div>'+$('manifest').innerHTML;
+ $('manifest').innerHTML=$('manifest').innerHTML.split('</div>').slice(0,5).join('</div>')+'</div>';
+}
+function updateUI(){
+ $('cash').textContent='$'+Math.floor(cash).toLocaleString();$('xp').textContent=Math.floor(xp).toLocaleString();$('shredded').textContent=shredded.toLocaleString();
+ const clutter=Math.min(100,papers.length/(14+hopper*7)*100);$('clutterText').textContent=Math.round(clutter)+'%';$('clutterBar').style.width=clutter+'%';
+ $('autoLabel').textContent=auto?'ONLINE · every 4 sec':'Locked · $'+(75+Math.floor(75*Math.pow(1.8,autoLevel)));
+ $('bladeDesc').textContent=bladeNames[blade]+' · '+bladeMult[blade]+'× document value';$('bladeCost').textContent=blade>=3?'MAX':'$'+upgrades.blade[blade];
+ $('motorDesc').textContent='Torque level '+motor+' · less resistance';$('motorCost').textContent=motor>=4?'MAX':'$'+upgrades.motor[motor];
+ $('hopperDesc').textContent=(14+hopper*7)+' sheet desk capacity';$('hopperCost').textContent=hopper>=4?'MAX':'$'+upgrades.hopper[hopper];
+ $('auto').disabled=auto;$('blade').disabled=blade>=3||cash<upgrades.blade[blade];$('motor').disabled=motor>=4||cash<upgrades.motor[motor];$('hopper').disabled=hopper>=4||cash<upgrades.hopper[hopper];
+ $('auto').disabled=auto||cash<75+Math.floor(75*Math.pow(1.8,autoLevel));
+}
+let autoLevel=0;
+function buy(which){if(which==='auto'){let cost=75+Math.floor(75*Math.pow(1.8,autoLevel));if(auto||cash<cost)return;cash-=cost;auto=true;addLog('Auto-spooler engaged. Printer runs unattended.');toast('AUTO-SPOOLER ONLINE');}
+ else {let level=({blade,motor,hopper})[which],cost=upgrades[which][level];if(level>=upgrades[which].length||cash<cost)return;cash-=cost;if(which==='blade')blade++;if(which==='motor')motor++;if(which==='hopper')hopper++;addLog(({blade:'Blade geometry upgraded.',motor:'Shredder torque increased.',hopper:'Feed hopper expanded.'})[which]);toast('HARDWARE UPGRADED');}updateUI()}
+$('print').addEventListener('click',spawn);$('auto').addEventListener('click',()=>buy('auto'));['blade','motor','hopper'].forEach(id=>$(id).addEventListener('click',()=>buy(id)));
+function shred(p){const mult=bladeMult[blade]*(p.stapled&&motor<1?.65:1);let value=Math.max(1,Math.round(p.t.value*mult));cash+=value;xp+=Math.max(1,Math.round(p.t.value*.12));shredded++;for(let i=0;i<12+blade*7;i++)bits.push({x:p.x+rand(-p.w/3,p.w/3),y:H-62,vx:rand(-150,150),vy:rand(-220,-30),life:rand(.5,1.3),size:rand(2,6),color:i%4?p.t.color:'#d8c89e'});
+ addLog('<em>+$'+value.toLocaleString()+'</em> · '+p.t.name+' shredded');if(p.t===tiers[4]){toast('ENCRYPTED SHARD RECOVERED');addLog('!!! Encrypted shard recovered from void file.')}updateUI()}
+function pointer(e){const r=canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}
+canvas.addEventListener('pointerdown',e=>{const p=pointer(e);for(let i=papers.length-1;i>=0;i--){const q=papers[i];if(Math.abs(p.x-q.x)<q.w*.65&&Math.abs(p.y-q.y)<q.h*.65){drag=q;q.vx=0;q.vy=0;canvas.setPointerCapture(e.pointerId);break}}});
+canvas.addEventListener('pointermove',e=>{if(drag){const p=pointer(e);drag.x=p.x;drag.y=p.y;drag.vx=0;drag.vy=0}});
+function release(){if(!drag)return;const p=drag;drag=null;if(p.y>H-145&&p.x>W*.12&&p.x<W*.91){papers.splice(papers.indexOf(p),1);shred(p)}}
+canvas.addEventListener('pointerup',release);canvas.addEventListener('pointercancel',release);
+function rr(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill()}
+function drawDesk(){ctx.fillStyle='#927b59';ctx.fillRect(0,0,W,H);
+ // desk planks and grain
+ for(let y=0;y<H;y+=54){ctx.fillStyle=y%108?'#9a835f':'#8e7654';ctx.fillRect(0,y,W,52);ctx.strokeStyle='#6f5c43';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,y+52);ctx.lineTo(W,y+52);ctx.stroke();for(let j=0;j<7;j++){ctx.strokeStyle='#a58e69';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(rand(0,W),y+rand(4,48));ctx.lineTo(rand(0,W),y+rand(4,48));ctx.stroke()}}
+ // vignette
+ const g=ctx.createRadialGradient(W/2,H/2,40,W/2,H/2,Math.max(W,H)*.75);g.addColorStop(0,'#00000000');g.addColorStop(1,'#17130d66');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+}
+function drawPrinter(){const x=W*.19,y=13,w=W*.62,h=77;ctx.fillStyle='#1c211c';rr(x+5,y+6,w,h,5);ctx.fillStyle='#4b5549';rr(x,y,w,h,5);ctx.fillStyle='#747e6b';rr(x+6,y+5,w-12,16,2);ctx.fillStyle='#242a24';rr(x+12,y+28,w-24,39,2);ctx.fillStyle='#87927a';rr(x+20,y+34,w-40,8,1);ctx.fillStyle='#c4c9ad';ctx.fillRect(x+27,y+52,w-54,3);ctx.fillStyle='#bd6c50';ctx.fillRect(x+w-27,y+34,8,8);ctx.fillStyle='#aab79a';ctx.font='bold 9px monospace';ctx.fillText('OMNICORP  //  DOCUMENT OUTPUT',x+17,y+20)}
+function drawShredder(){const y=H-105;ctx.fillStyle='#171b17';rr(W*.07,y+14,W*.86,108,7);ctx.fillStyle='#333c33';rr(W*.07,y,W*.86,105,7);ctx.fillStyle='#596454';rr(W*.085,y+6,W*.83,16,2);ctx.fillStyle='#171b17';rr(W*.12,y+29,W*.76,28,3);ctx.fillStyle='#87927b';for(let i=0;i<Math.floor(W/8);i++){ctx.fillRect(W*.13+i*W*.74/Math.floor(W/8),y+34,2,17)}
+ ctx.fillStyle='#1c211c';rr(W*.14,y+67,W*.72,25,3);ctx.fillStyle='#6b755f';ctx.font='bold 10px monospace';ctx.textAlign='center';ctx.fillText('INDUSTRIAL CROSS-FEED SHREDDER',W/2,y+84);ctx.textAlign='left';
+ // side confetti bin
+ ctx.fillStyle='#293129';rr(W*.88,y+47,W*.085,58,3);ctx.fillStyle='#7e8a69';ctx.fillRect(W*.89,y+50,W*.065,3);ctx.fillStyle='#c7b98e';for(let i=0;i<9;i++)ctx.fillRect(W*.895+rand(0,W*.055),y+80+rand(0,18),3,2)
+}
+function drawPaper(p){ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.a);ctx.shadowColor='#211a10aa';ctx.shadowBlur=9;ctx.shadowOffsetX=4;ctx.shadowOffsetY=6;ctx.fillStyle=p.t.color;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.shadowColor='transparent';ctx.strokeStyle=p.t===tiers[4]?'#a66ed0':'#8b816b';ctx.lineWidth=1;ctx.strokeRect(-p.w/2,-p.h/2,p.w,p.h);
+ ctx.fillStyle=p.t.ink;ctx.font='bold '+Math.max(7,Math.round(p.w*.105))+'px monospace';ctx.fillText(p.t===tiers[4]?'VOID//FILE':p.t.name.toUpperCase().slice(0,16),-p.w/2+7,-p.h/2+14);
+ ctx.fillStyle=p.t.ink;for(let i=0;i<5;i++){ctx.globalAlpha=.42;ctx.fillRect(-p.w/2+7,-p.h/2+24+i*9,p.w*(.45+((i*17)%40)/100),2)}ctx.globalAlpha=1;
+ if(p.t===tiers[3]){ctx.fillStyle='#9f3831';ctx.fillRect(-p.w/2+5,p.h/2-22,p.w-10,13);ctx.fillStyle='#f0d6b9';ctx.font='bold 8px monospace';ctx.fillText('BLACKLISTED',-p.w/2+8,p.h/2-12)}
+ if(p.t===tiers[4]){ctx.strokeStyle='#d8a8ff';ctx.lineWidth=2;ctx.strokeRect(-p.w/2+3,-p.h/2+3,p.w-6,p.h-6);ctx.fillStyle='#d8a8ff';ctx.fillRect(-p.w/2+8,p.h/2-18,p.w-16,2)}
+ if(p.stapled){ctx.fillStyle='#9b9b8b';ctx.fillRect(p.w/2-13,-p.h/2+5,8,3)}
+ ctx.restore()}
+function frame(ts){const dt=Math.min(.033,(ts-last)/1000||0);last=ts;spawnClock+=dt;autoClock+=dt;
+ if(auto&&autoClock>4){autoClock=0;spawn()}
+ const deskBottom=H-115;
+ for(const p of papers){if(p===drag)continue;p.age+=dt;p.vy+=250*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.a+=p.va*dt;if(p.x<p.w/2||p.x>W-p.w/2)p.vx*=-.65;if(p.y>deskBottom-p.h*.3){p.y=deskBottom-p.h*.3;p.vy*=-.18;p.vx*=.94;p.va*=.85}}
+ for(let i=0;i<bits.length;i++){const b=bits[i];b.life-=dt;b.vy+=300*dt;b.x+=b.vx*dt;b.y+=b.vy*dt}bits=bits.filter(b=>b.life>0);
+ ctx.clearRect(0,0,W,H);drawDesk();drawPrinter();
+ // desk clutter guide
+ ctx.fillStyle='#211e17';ctx.globalAlpha=.25;ctx.fillRect(0,deskBottom,W,2);ctx.globalAlpha=1;
+ papers.forEach(drawPaper);drawShredder();
+ for(const b of bits){ctx.globalAlpha=clamp(b.life,0,1);ctx.fillStyle=b.color;ctx.fillRect(b.x,b.y,b.size,b.size*.65)}ctx.globalAlpha=1;
+ if(drag){ctx.strokeStyle='#e7d69d';ctx.setLineDash([5,4]);ctx.lineWidth=2;ctx.strokeRect(drag.x-drag.w*.58,drag.y-drag.h*.58,drag.w*1.16,drag.h*1.16);ctx.setLineDash([])}
+ requestAnimationFrame(frame)}
+requestAnimationFrame(frame);updateUI();
+setInterval(()=>{if(papers.length>0){const c=papers.length; $('clutterText').textContent=Math.round(c/(14+hopper*7)*100)+'%'}},500);
+})();
+</script>
+</body>
+</html>
