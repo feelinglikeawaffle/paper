@@ -84,10 +84,10 @@ function interval(){return Math.max(.7,3.8-printerLevel*.34)}
 function feedPrinter(){if(printCooldown>0){toast('PRINTER RECHARGING');return}spawn(1);printCooldown=interval();feedFlash=.5;updateUI();toast('ONE SHEET FED')}
 function printerWidth(){return Math.min(220,W*(W<600?.62:.34))}
 function tapPrinterAt(x,y){const count=printerCount+prestigePrinter,w=printerWidth();for(let i=0;i<count;i++){const px=W*(count===1?.5:.18+i*.64/(count-1));if(x>=px-w*.58&&x<=px+w*.58&&y>=5&&y<=112)return true}return false}
-function spawn(n=1,source=0){for(let i=0;i<n;i++){const x=W*.5+rand(-20,20),size=rand(34,43),health=2+Math.floor(paperCount/85);let pile=piles.length&&Math.random()<.82?piles[Math.floor(Math.random()*piles.length)]:null;if(!pile){pile={x:rand(W*.13,W*.87),y:rand(H*.34,H*.72),count:0};piles.push(pile)}const layer=pile.count++;papers.push({x,y:77,vx:rand(-12,12),vy:rand(15,35),targetX:clamp(pile.x+rand(-5,5)+layer*.35,size,W-size),targetY:clamp(pile.y-layer*1.35,H*.28,H*.77),size,health,max:health,angle:rand(-.16,.16),spin:rand(-.35,.35),falling:true,layer:layer%5,seed:Math.random()});paperCount++}updateUI()}
-function radius(){return 52+radiusLevel*26+(prestigePrinter>1?(prestigePrinter-1)*8:0)}
+function spawn(n=1,source=0){for(let i=0;i<n;i++){const x=W*.5+rand(-20,20),size=rand(42,52),health=2+Math.floor(paperCount/85);let pile=piles.length&&Math.random()<.82?piles[Math.floor(Math.random()*piles.length)]:null;if(!pile){pile={x:rand(W*.13,W*.87),y:rand(H*.34,H*.72),count:0};piles.push(pile)}const layer=pile.count++;papers.push({x,y:77,vx:rand(-12,12),vy:rand(15,35),targetX:clamp(pile.x+rand(-5,5)+layer*.35,size,W-size),targetY:clamp(pile.y-layer*1.35,H*.28,H*.77),size,health,max:health,angle:rand(-.16,.16),spin:rand(-.35,.35),falling:true,layer:layer%5,seed:Math.random()});paperCount++}updateUI()}
+function radius(){return 40+radiusLevel*24+(prestigePrinter>1?(prestigePrinter-1)*8:0)}
 function damage(){return 1+clickLevel+damageLevel*2}
-function impactInterval(){return Math.max(.7,2.8-coolLevel*.24)}
+function impactInterval(){return Math.max(.65,2.3-coolLevel*.2)}
 function impactAt(x,y){clickTimer=impactInterval();impact={x,y,r:0,life:.22};let hit=0,destroyed=0;for(const p of papers){if(Math.hypot(p.x-x,p.y-y)<=radius()){p.health-=damage();hit++;for(let i=0;i<3+damageLevel;i++)bits.push({x:p.x+rand(-p.size/2,p.size/2),y:p.y+rand(-p.size/2,p.size/2),vx:rand(-105,105),vy:rand(-150,-25),life:rand(.35,.7),size:rand(2,5)})}}
 papers=papers.filter(p=>{if(p.health<=0){destroyed++;return false}return true});
 if(destroyed){const reward=destroyed*(1+Math.floor(paperCount/125));cash+=reward;xp+=destroyed*2;shredded+=destroyed;lifetimeShredded+=destroyed;log('<em>+'+reward+' credits</em> · '+destroyed+' sheet(s) obliterated')}
