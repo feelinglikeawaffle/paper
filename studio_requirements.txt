@@ -1,9 +1,0 @@
-fastapi>=0.115.0
-uvicorn[standard]>=0.30.0
-python-multipart>=0.0.9
-Pillow>=10.0.0
-accelerate>=1.0.0
-transformers>=4.51.0
-safetensors>=0.4.0
-# Install PyTorch separately for your OS/GPU from https://pytorch.org/get-started/locally/
-# Install current Diffusers: pip install git+https://github.com/huggingface/diffusers.git
