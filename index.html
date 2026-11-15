@@ -93,7 +93,7 @@ function outputCount(mult){const whole=Math.floor(mult);paperRemainder+=mult-who
 function prestigeRequirement(){return Math.floor(100*Math.pow(2.25,rebirthCount))}
 const rankLadder=[['INTERN',0],['CLERK',500],['OPERATOR',2000],['SUPERVISOR',8000],['MANAGER',30000],['DIRECTOR',100000],['VICE PRESIDENT',350000],['EXECUTIVE',1200000],['BOARD MEMBER',5000000],['OMNICORP LEGEND',20000000]];
 function currentRank(){let i=0;for(let n=0;n<rankLadder.length;n++)if(lifetimeShredded>=rankLadder[n][1])i=n;return i}
-function prestigeMilestoneBonus(level){return level>=10?.5:level>=5?.25:0}
+function prestigeMilestoneBonus(level){return (level>=5?.25:0)+(level>=10?.5:0)}
 function prestigeMilestoneLabel(key){return ({money:'CREDIT PAYOUT',paper:'PAPER OUTPUT',damage:'IMPACT DAMAGE',research:'CONFETTI XP',speed:'IMPACT RATE'})[key]||'CORPORATE OUTPUT'}
 function prestigeMilestoneCopy(level,key){const effect=prestigeMilestoneLabel(key);if(level>=10)return 'LV5 +25% & LV10 +50% ACTIVE · '+effect;if(level>=5)return 'LV5 +25% ACTIVE · LV10 +50% '+effect;return 'LV5 +25% / LV10 +50% '+effect}
 function printerX(index){const count=printerCount+prestigePrinter;return W*(count===1?.5:.18+index*.64/(count-1))}function feedPrinter(index=0){if(printCooldown>0){toast('PRINTER RECHARGING');return}spawn(outputCount((1+paperOutputLevel)*bonuses.paper*(1+prestigePaperLevel*.15)*(1+prestigeMilestoneBonus(prestigePaperLevel))*(1+currentRank()*.08)),index);printCooldown=interval();printerBursts[index]=.85;feedFlash=.5;updateUI();toast('ONE SHEET FED')}
