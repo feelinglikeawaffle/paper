@@ -52,6 +52,25 @@ button:hover{filter:brightness(1.18)}button:active{transform:translateY(2px);box
 .prestige-audit-value small{color:#aab49e;font-size:8px;font-weight:500}
 .prestige-audit-preview{display:block!important;max-width:178px;margin-top:4px;color:#c4d49c!important;font-size:7px!important;line-height:1.35;white-space:normal}
 @media(max-width:760px){.prestige-audit-preview{max-width:142px;font-size:6px!important}}
+.prestige-planner{padding:9px 10px 10px;border-top:1px solid #354033;background:linear-gradient(145deg,#1b231c,#151c16)}
+.prestige-planner-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap}
+.prestige-planner-head b{color:#d4dfbf;font-size:9px;letter-spacing:1px}
+.prestige-planner-head small{color:#d9bd83;font-size:8px}
+.prestige-planner-closest{margin-top:6px;padding:6px 7px;background:#293326;border:1px solid #485640;color:#c8d5a8;font-size:8px;line-height:1.5}
+.prestige-planner-closest b{color:#e3c17c;letter-spacing:.5px}
+.prestige-plan-list{display:grid;gap:5px;margin-top:7px}
+.prestige-plan-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.55fr);gap:7px;align-items:center;padding:6px 7px;border:1px solid #354133;background:#202820}
+.prestige-plan-name b{display:block;font-size:8px;color:#e0e5d5;letter-spacing:.35px}
+.prestige-plan-name small{display:block;font-size:7px;color:#91a087;margin-top:2px}
+.prestige-plan-targets{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.prestige-plan-target{min-width:0;padding:4px 5px;background:#171e18;border:1px solid #3c4938}
+.prestige-plan-target.ready{border-color:#788c5c}
+.prestige-plan-target.claimed{opacity:.65}
+.prestige-plan-target span{display:block;color:#aeb99e;font-size:7px;letter-spacing:.5px}
+.prestige-plan-target b{display:block;color:#e3c17c;font-size:9px;margin-top:2px}
+.prestige-plan-target small{display:block;color:#aeb99e;font-size:7px;margin-top:2px;white-space:normal}
+.prestige-plan-target.ready small{color:#c4d49c}
+@media(max-width:760px){.prestige-planner{padding:7px}.prestige-plan-row{grid-template-columns:1fr;gap:5px}.prestige-plan-targets{grid-template-columns:1fr 1fr}}
 .prestige-audit-note{padding:6px 10px 8px;color:#879381;font-size:8px;line-height:1.45;border-top:1px solid #354033}
 </style>
 </head>
@@ -81,7 +100,7 @@ button:hover{filter:brightness(1.18)}button:active{transform:translateY(2px);box
 <button class="upgrade" id="printerSpeed"><span><b>Print Speed</b><small id="printerSpeedDesc">Shorter printer cooldown</small></span><span class="cost" id="printerSpeedCost">$10</span></button>
 <button class="upgrade" id="paperOutput"><span><b>Paper Per Print</b><small id="paperOutputDesc">Print more sheets each time</small></span><span class="cost" id="paperOutputCost">$10</span></button><button class="upgrade" id="stackChance"><span><b>Stack Chance</b><small id="stackChanceDesc">Chance to print tougher, higher-value stacks</small></span><span class="cost" id="stackChanceCost">$10</span></button></section>
   <section class="card"><h2>RESEARCH NETWORK <span>XP</span></h2><div class="log">A sprawling R&D network. Connect branches to unlock powerful technologies.</div><button class="tree-launch" id="openTree">◎ OPEN SKILL TREE</button></section>
-  <section class="card"><h2>PRESTIGE SKILL TREE <span id="prestigePoints">0 SHARES</span></h2><div class="log" id="prestigeInfo">Corporate Restructuring unlocks permanent systems. Requirement: shred 100 sheets.</div><button class="upgrade" id="prestige"><span><b>Corporate Restructuring</b><small id="prestigeDesc">Reset current run for 1 Golden Share</small></span><span class="cost" id="prestigeCost">100 SHRED</span></button><button class="upgrade" id="prestigePrinter"><span><b>Expand Printer Bay</b><small id="prestigePrinterDesc">Unlock another physical printer</small></span><span class="cost" id="prestigePrinterCost">1 SHARE</span></button><button class="upgrade" id="prestigeAuto"><span><b>Automated Feed Contract</b><small id="prestigeAutoDesc">Printers automatically feed on cooldown</small></span><span class="cost" id="prestigeAutoCost">1 SHARE</span></button><button class="upgrade" id="prestigeMoney"><span><b>Executive Revenue</b><small id="prestigeMoneyDesc">Permanent cash multiplier</small></span><span class="cost" id="prestigeMoneyCost">1 SHARE</span></button><button class="upgrade" id="prestigePaper"><span><b>Industrial Contracts</b><small id="prestigePaperDesc">Permanent paper output</small></span><span class="cost" id="prestigePaperCost">1 SHARE</span></button><button class="upgrade" id="prestigeDamage"><span><b>Heavy-Duty Blades</b><small id="prestigeDamageDesc">Permanent impact damage</small></span><span class="cost" id="prestigeDamageCost">1 SHARE</span></button><button class="upgrade" id="prestigeSpeed"><span><b>Executive Reflexes</b><small id="prestigeSpeedDesc">Permanent impact-cycle speed</small></span><span class="cost" id="prestigeSpeedCost">1 SHARE</span></button><button class="upgrade" id="prestigeResearch"><span><b>R&D Endowment</b><small id="prestigeResearchDesc">More XP from shredding</small></span><span class="cost" id="prestigeResearchCost">1 SHARE</span></button><details class="prestige-audit" id="prestigeAudit"><summary><span>◎ CONTRACT OUTPUT BREAKDOWN</span><small>5 LIVE CONTRACTS</small></summary><div class="prestige-audit-rows" id="prestigeAuditRows"></div><div class="prestige-audit-note">Prestige-only effects. Career rank, rebirth, R&D and regular upgrades apply separately.</div></details></section>
+  <section class="card"><h2>PRESTIGE SKILL TREE <span id="prestigePoints">0 SHARES</span></h2><div class="log" id="prestigeInfo">Corporate Restructuring unlocks permanent systems. Requirement: shred 100 sheets.</div><button class="upgrade" id="prestige"><span><b>Corporate Restructuring</b><small id="prestigeDesc">Reset current run for 1 Golden Share</small></span><span class="cost" id="prestigeCost">100 SHRED</span></button><button class="upgrade" id="prestigePrinter"><span><b>Expand Printer Bay</b><small id="prestigePrinterDesc">Unlock another physical printer</small></span><span class="cost" id="prestigePrinterCost">1 SHARE</span></button><button class="upgrade" id="prestigeAuto"><span><b>Automated Feed Contract</b><small id="prestigeAutoDesc">Printers automatically feed on cooldown</small></span><span class="cost" id="prestigeAutoCost">1 SHARE</span></button><button class="upgrade" id="prestigeMoney"><span><b>Executive Revenue</b><small id="prestigeMoneyDesc">Permanent cash multiplier</small></span><span class="cost" id="prestigeMoneyCost">1 SHARE</span></button><button class="upgrade" id="prestigePaper"><span><b>Industrial Contracts</b><small id="prestigePaperDesc">Permanent paper output</small></span><span class="cost" id="prestigePaperCost">1 SHARE</span></button><button class="upgrade" id="prestigeDamage"><span><b>Heavy-Duty Blades</b><small id="prestigeDamageDesc">Permanent impact damage</small></span><span class="cost" id="prestigeDamageCost">1 SHARE</span></button><button class="upgrade" id="prestigeSpeed"><span><b>Executive Reflexes</b><small id="prestigeSpeedDesc">Permanent impact-cycle speed</small></span><span class="cost" id="prestigeSpeedCost">1 SHARE</span></button><button class="upgrade" id="prestigeResearch"><span><b>R&D Endowment</b><small id="prestigeResearchDesc">More XP from shredding</small></span><span class="cost" id="prestigeResearchCost">1 SHARE</span></button><details class="prestige-audit" id="prestigeAudit"><summary><span>◎ CONTRACT OUTPUT BREAKDOWN</span><small>5 LIVE CONTRACTS</small></summary><div class="prestige-audit-rows" id="prestigeAuditRows"></div><div class="prestige-planner" id="prestigePlanner"></div><div class="prestige-audit-note">Prestige-only effects. Career rank, rebirth, R&D and regular upgrades apply separately.</div></details></section>
   <section class="card"><h2>CAREER LADDER <span id="corpRank">INTERN</span></h2><div class="log" id="rankInfo">Lifetime production unlocks permanent corporate standing.</div><div class="bar"><i id="rankBar"></i></div></section><section class="card"><h2>PAPER SYSTEM</h2><div class="log" id="manifest"><div>Awaiting first document…</div></div></section>
   <section class="card logcard"><h2>INTERNAL MEMOS <span>LIVE</span></h2><div class="log" id="log"><div>Welcome aboard. Please shred responsibly.</div></div></section>
  </aside>
@@ -133,6 +152,34 @@ function buyPrestigeUpgrade(key){const levels={money:prestigeMoneyLevel,paper:pr
 function renderSkillTree(){const nodes=$('treeNodes'),lines=$('treeLines');nodes.innerHTML='';lines.innerHTML='';const lookup=Object.fromEntries(skills.map(s=>[s.id,s]));branchData.forEach((branch,i)=>{const label=document.createElement('div');label.className='tree-branch-label';label.textContent=branch[0];label.style.left=((TREE_CENTER+Math.cos(branchAngles[i])*1115)/TREE_SIZE*100)+'%';label.style.top=(TREE_CENTER+Math.sin(branchAngles[i])*1115)+'px';nodes.appendChild(label)});for(const s of skills){for(const req of s.req){const p=lookup[req],line=document.createElementNS('http://www.w3.org/2000/svg','line');line.setAttribute('x1',p.x);line.setAttribute('y1',p.y);line.setAttribute('x2',s.x);line.setAttribute('y2',s.y);if(!ownedSkills.has(s.id))line.setAttribute('class','locked');lines.appendChild(line)}}for(const s of skills){const owned=ownedSkills.has(s.id),ready=s.req.every(id=>ownedSkills.has(id)),el=document.createElement('div');el.className='skill-node '+(owned?'owned':ready?'available':'locked');el.style.left=(s.x/TREE_SIZE*100)+'%';el.style.top=s.y+'px';const b=document.createElement('button');b.className='skill-orb';b.textContent=owned?'✓':s.icon;b.title=s.name+'\n'+s.desc+'\nCost: '+s.cost+' XP';b.disabled=owned||!ready||xp<s.cost;b.addEventListener('click',()=>buySkill(s.id));const n=document.createElement('div');n.className='node-name';n.textContent=s.name;const cost=document.createElement('div');cost.className='node-cost';cost.textContent=owned?'MAXED':s.cost+' XP';el.append(b,n,cost);nodes.appendChild(el)}$('treeXP').textContent=Math.floor(xp).toLocaleString()+' XP';$('openTree').textContent='◎ OPEN SKILL TREE · '+(skills.length-1)+' UPGRADES'}
 function buySkill(id){const s=skills.find(n=>n.id===id);if(!s||ownedSkills.has(id)||!s.req.every(r=>ownedSkills.has(r))||xp<s.cost)return;xp-=s.cost;ownedSkills.add(id);s.fx();log('R&D UNLOCKED: '+s.name);toast('SKILL ACQUIRED');renderSkillTree();updateUI()}
 function prestigeMilestoneAudit(level){return (level>=5?'LV5 +25% ACTIVE':'LV5 +25% IN '+(5-level)+' LV')+' · '+(level>=10?'LV10 +50% ACTIVE':'LV10 +50% IN '+(10-level)+' LV')}
+function sharesToMilestone(level,target){
+if(level>=target)return 0;
+let total=0;
+for(let next=level+1;next<=target;next++)total+=next;
+return total
+}
+function renderPrestigePlanner(){
+const contracts=[
+{name:'EXECUTIVE REVENUE',level:prestigeMoneyLevel},
+{name:'INDUSTRIAL CONTRACTS',level:prestigePaperLevel},
+{name:'HEAVY-DUTY BLADES',level:prestigeDamageLevel},
+{name:'R&D ENDOWMENT',level:prestigeResearchLevel},
+{name:'EXECUTIVE REFLEXES',level:prestigeSpeedLevel}
+];
+const milestones=[];
+const rows=contracts.map(contract=>{
+const targets=[5,10].map(target=>{
+const claimed=contract.level>=target,required=sharesToMilestone(contract.level,target),shortfall=Math.max(0,required-prestigeShares);
+if(!claimed)milestones.push({name:contract.name,target,required,shortfall});
+return '<div class="prestige-plan-target '+(claimed?'claimed':shortfall===0?'ready':'')+'"><span>LEVEL '+target+'</span><b>'+(claimed?'CLAIMED':required.toLocaleString()+' SHARES')+'</b><small>'+(claimed?'PERMANENT':shortfall===0?'READY WITH CURRENT BANK':'NEED '+shortfall.toLocaleString()+' MORE')+'</small></div>'
+}).join('');
+return '<div class="prestige-plan-row"><div class="prestige-plan-name"><b>'+contract.name+'</b><small>CURRENT LEVEL '+contract.level+'</small></div><div class="prestige-plan-targets">'+targets+'</div></div>'
+}).join('');
+milestones.sort((a,b)=>a.shortfall-b.shortfall||a.required-b.required);
+const closest=milestones.slice(0,3);
+const closestText=closest.length?closest.map(m=>m.name+' LV'+m.target+' · '+(m.shortfall===0?'READY':m.shortfall.toLocaleString()+' MORE')).join(' / '):'ALL PRESTIGE MILESTONES CLAIMED';
+$('prestigePlanner').innerHTML='<div class="prestige-planner-head"><b>GOLDEN SHARE ROADMAP</b><small>BANKED: '+prestigeShares.toLocaleString()+' SHARES</small></div><div class="prestige-planner-closest"><b>CLOSEST TO FUND</b><br>'+closestText+'</div><div class="prestige-plan-list">'+rows+'</div>'
+}
 function renderPrestigeAudit(){
 const money=prestigeMoneyLevel,paper=prestigePaperLevel,blade=prestigeDamageLevel,researchLevel=prestigeResearchLevel,speed=prestigeSpeedLevel;
 const moneyFactor=l=>(1+l*.2)*(1+prestigeMilestoneBonus(l));
@@ -157,6 +204,7 @@ const rows=[
 {name:'EXECUTIVE REFLEXES',level:speed,rate:'+10% impact rate / level',value:'×'+((1+speed*.1)*(1+prestigeMilestoneBonus(speed))).toFixed(2),sub:cycleNow.toFixed(2)+'s current impact cycle',preview:'NEXT '+cycleNext.toFixed(2)+'s (−'+((1-cycleNext/cycleNow)*100).toFixed(1)+'% cycle) · '+costLabel(speed)+milestoneLabel(speed+1)}
 ];
 $('prestigeAuditRows').innerHTML=rows.map(row=>'<div class="prestige-audit-row"><div><b>'+row.name+'</b><small>LEVEL '+row.level+' · '+row.rate+'</small><small class="milestone-status">'+prestigeMilestoneAudit(row.level)+'</small></div><div class="prestige-audit-value">'+row.value+'<small>'+row.sub+'</small><small class="prestige-audit-preview">'+row.preview+'</small></div></div>').join('')
+renderPrestigePlanner()
 }
 function updateUI(){$('cash').textContent='$'+Math.floor(cash).toLocaleString();$('xp').textContent=Math.floor(xp).toLocaleString();$('shredded').textContent=shredded.toLocaleString();$('printerCount').textContent=String(printerCount+prestigePrinter).padStart(2,'0')+' UNIT'+(printerCount+prestigePrinter===1?'':'S');$('clutterText').textContent=paperCount.toLocaleString()+' sheets';$('clutterBar').style.width='100%';$('autoLabel').textContent=autoUnlocked?'AUTO FEED · '+interval().toFixed(1)+'s':'Locked · Prestige research';$('auto').disabled=!autoUnlocked;$('auto').style.opacity=autoUnlocked?'1':'.45';$('feedHintText').textContent=printCooldown>0?'PRINTER COOLING · '+printCooldown.toFixed(1)+'s':'TAP THE PRINTER ON THE DESK TO FEED ONE SHEET';$('manifest').innerHTML='<div><em>'+paperCount.toLocaleString()+'</em> sheets printed · '+papers.length.toLocaleString()+' piles on table</div><div>Impact damage: '+damage()+'</div><div>Impact radius: '+Math.round(radius())+'px · Impact cycle '+impactInterval().toFixed(1)+'s</div><div>Stack chance: '+Math.round(stackChance*100)+'% · '+stackTier+'-sheet stacks</div>';
 renderSkillTree();for(const key of Object.keys(upgradeDefs)){const lvl=upgradeDefs[key].level(),cost=upgradeCost(key);$(key+'Cost').textContent='$'+cost.toLocaleString();$(key+'Desc').textContent=key==='stackChance'?Math.round(stackChance*100)+'% chance · '+stackTier+'-sheet stacks':upgradeDefs[key].label+' Lv '+lvl;$(key).disabled=cash<cost}
