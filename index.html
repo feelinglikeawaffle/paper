@@ -72,6 +72,23 @@ button:hover{filter:brightness(1.18)}button:active{transform:translateY(2px);box
 .prestige-plan-target.ready small{color:#c4d49c}
 @media(max-width:760px){.prestige-planner{padding:7px}.prestige-plan-row{grid-template-columns:1fr;gap:5px}.prestige-plan-targets{grid-template-columns:1fr 1fr}}
 .prestige-audit-note{padding:6px 10px 8px;color:#879381;font-size:8px;line-height:1.45;border-top:1px solid #354033}
+
+.prestige-efficiency{margin-top:9px;padding-top:8px;border-top:1px solid #354033}
+.prestige-efficiency-head{display:flex;justify-content:space-between;align-items:center;gap:7px;flex-wrap:wrap}
+.prestige-efficiency-head b{color:#d4dfbf;font-size:8px;letter-spacing:.8px}
+.prestige-efficiency-head small{color:#a6b392;font-size:7px}
+.prestige-efficiency-best{margin-top:6px;padding:6px 7px;background:#303a2b;border:1px solid #718452;color:#e2d39b;font-size:8px;line-height:1.4}
+.prestige-efficiency-list{display:grid;gap:4px;margin-top:6px}
+.prestige-efficiency-row{display:grid;grid-template-columns:15px minmax(0,1fr) auto;gap:6px;align-items:center;padding:5px 6px;background:#202820;border:1px solid #354133}
+.prestige-efficiency-row.best{border-color:#788c5c;background:#263125}
+.prestige-efficiency-rank{color:#aab99a;font-size:8px;font-weight:900;text-align:center}
+.prestige-efficiency-name{min-width:0}
+.prestige-efficiency-name b{display:block;color:#e0e5d5;font-size:8px;letter-spacing:.2px}
+.prestige-efficiency-name small{display:block;color:#9eaa92;font-size:7px;line-height:1.4;margin-top:2px;white-space:normal}
+.prestige-efficiency-row strong{color:#e3c17c;font-size:9px;white-space:nowrap;text-align:right}
+.prestige-efficiency-row strong small{display:block;color:#aab49e;font-size:6px;font-weight:500}
+.prestige-efficiency-note{margin-top:6px;color:#879381;font-size:7px;line-height:1.45}
+@media(max-width:760px){.prestige-efficiency-row{grid-template-columns:13px minmax(0,1fr) auto;padding:5px 4px}.prestige-efficiency-name b{font-size:7px}.prestige-efficiency-name small{font-size:6px}.prestige-efficiency-row strong{font-size:8px}}
 </style>
 </head>
 <body>
@@ -160,11 +177,11 @@ return total
 }
 function renderPrestigePlanner(){
 const contracts=[
-{name:'EXECUTIVE REVENUE',level:prestigeMoneyLevel},
-{name:'INDUSTRIAL CONTRACTS',level:prestigePaperLevel},
-{name:'HEAVY-DUTY BLADES',level:prestigeDamageLevel},
-{name:'R&D ENDOWMENT',level:prestigeResearchLevel},
-{name:'EXECUTIVE REFLEXES',level:prestigeSpeedLevel}
+{name:'EXECUTIVE REVENUE',level:prestigeMoneyLevel,factor:l=>(1+l*.2)*(1+prestigeMilestoneBonus(l))},
+{name:'INDUSTRIAL CONTRACTS',level:prestigePaperLevel,factor:l=>(1+l*.15)*(1+prestigeMilestoneBonus(l))},
+{name:'HEAVY-DUTY BLADES',level:prestigeDamageLevel,factor:l=>(1+clickStrengthLevel+currentRank()*.5+bonuses.damage+l)*(1+prestigeMilestoneBonus(l))},
+{name:'R&D ENDOWMENT',level:prestigeResearchLevel,factor:l=>(1+l*.2)*(1+prestigeMilestoneBonus(l))},
+{name:'EXECUTIVE REFLEXES',level:prestigeSpeedLevel,factor:l=>(1+l*.1)*(1+prestigeMilestoneBonus(l))}
 ];
 const milestones=[];
 const rows=contracts.map(contract=>{
@@ -178,7 +195,14 @@ return '<div class="prestige-plan-row"><div class="prestige-plan-name"><b>'+cont
 milestones.sort((a,b)=>a.shortfall-b.shortfall||a.required-b.required);
 const closest=milestones.slice(0,3);
 const closestText=closest.length?closest.map(m=>m.name+' LV'+m.target+' · '+(m.shortfall===0?'READY':m.shortfall.toLocaleString()+' MORE')).join(' / '):'ALL PRESTIGE MILESTONES CLAIMED';
-$('prestigePlanner').innerHTML='<div class="prestige-planner-head"><b>GOLDEN SHARE ROADMAP</b><small>BANKED: '+prestigeShares.toLocaleString()+' SHARES</small></div><div class="prestige-planner-closest"><b>CLOSEST TO FUND</b><br>'+closestText+'</div><div class="prestige-plan-list">'+rows+'</div>'
+const efficiency=contracts.map(contract=>{
+const next=contract.level+1,cost=1+contract.level;
+const gain=(contract.factor(next)/contract.factor(contract.level)-1)*100;
+return {name:contract.name,level:contract.level,next,cost,gain,perShare:gain/cost,affordable:prestigeShares>=cost,milestone:next===5?'LV5 MILESTONE':next===10?'LV10 MILESTONE':''}
+}).sort((a,b)=>b.perShare-a.perShare);
+const best=efficiency[0];
+const efficiencyRows=efficiency.map((entry,index)=>'<div class="prestige-efficiency-row '+(index===0?'best':'')+'"><span class="prestige-efficiency-rank">'+(index+1)+'</span><div class="prestige-efficiency-name"><b>'+entry.name+'</b><small>LV '+entry.level+' → '+entry.next+' · '+entry.cost+' SHARE'+(entry.cost===1?'':'S')+' · '+(entry.affordable?'CAN AFFORD':'NEED '+(entry.cost-prestigeShares)+' MORE')+(entry.milestone?' · '+entry.milestone:'')+'</small></div><strong>+'+entry.perShare.toFixed(1)+'%<small>/ SHARE</small></strong></div>').join('');
+$('prestigePlanner').innerHTML='<div class="prestige-planner-head"><b>GOLDEN SHARE ROADMAP</b><small>BANKED: '+prestigeShares.toLocaleString()+' SHARES</small></div><div class="prestige-planner-closest"><b>CLOSEST TO FUND</b><br>'+closestText+'</div><div class="prestige-plan-list">'+rows+'</div><div class="prestige-efficiency"><div class="prestige-efficiency-head"><b>NEXT-LEVEL SPENDING ORDER</b><small>RELATIVE GAIN PER SHARE</small></div><div class="prestige-efficiency-best">BEST RAW RETURN · '+best.name+' · +'+best.perShare.toFixed(1)+'% / SHARE</div><div class="prestige-efficiency-list">'+efficiencyRows+'</div><div class="prestige-efficiency-note">Ranks percentage improvement per share, not strategic importance. Prioritize the resource slowing your run.</div></div>'
 }
 function renderPrestigeAudit(){
 const money=prestigeMoneyLevel,paper=prestigePaperLevel,blade=prestigeDamageLevel,researchLevel=prestigeResearchLevel,speed=prestigeSpeedLevel;
